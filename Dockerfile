@@ -91,7 +91,8 @@ RUN wget ${archive_url} && \
     rm -r ${cachet_ver}.tar.gz && \
     php /bin/composer.phar global require "hirak/prestissimo:^0.3" && \
     php /bin/composer.phar install -o && \
-    rm -rf bootstrap/cache/*
+    rm -rf bootstrap/cache/* \
+    php /bin/composer.phar update cachethq/core
 
 COPY conf/php-fpm-pool.conf /etc/php7/php-fpm.d/www.conf
 COPY conf/supervisord.conf /etc/supervisor/supervisord.conf
