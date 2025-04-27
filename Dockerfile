@@ -9,8 +9,6 @@ ARG archive_url
 ENV cachet_ver ${cachet_ver:-2.4}
 ENV archive_url ${archive_url:-https://github.com/cachethq/Cachet/archive/${cachet_ver}.tar.gz}
 
-ENV COMPOSER_VERSION 1.9.0
-
 # Install system dependencies
 RUN apk add --no-cache --update \
     mysql-client \
@@ -72,7 +70,7 @@ RUN mkdir -p /var/www/html && \
 RUN wget https://getcomposer.org/installer -O /tmp/composer-setup.php && \
     wget https://composer.github.io/installer.sig -O /tmp/composer-setup.sig && \
     php -r "if (hash('SHA384', file_get_contents('/tmp/composer-setup.php')) !== trim(file_get_contents('/tmp/composer-setup.sig'))) { unlink('/tmp/composer-setup.php'); echo 'Invalid installer' . PHP_EOL; exit(1); }" && \
-    php /tmp/composer-setup.php --version=$COMPOSER_VERSION --install-dir=bin && \
+    php /tmp/composer-setup.php --install-dir=bin && \
     php -r "unlink('/tmp/composer-setup.php');"
 
 WORKDIR /var/www/html/
