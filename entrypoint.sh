@@ -103,7 +103,9 @@ start_system() {
   migrate_db
   php artisan config:cache
   php artisan vendor:publish --tag=livewire:assets
+  php artisan vendor:publish --tag=cachet
   php artisan filament:assets
+  php artisan cachet:make:user --email ${ADMIN_EMAIL} --password ${ADMIN_PASSWORD} --admin admin --name ${ADMIN_NAME}
   echo "Starting Cachet! ..."
   /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
 }
