@@ -1,103 +1,51 @@
-FROM nginx:1.28.0-alpine
+FROM php:8.3-fpm
 
 EXPOSE 8000
 CMD ["/sbin/entrypoint.sh"]
 
-ARG cachet_ver
-ARG archive_url
+ENV COMPOSER_VERSION 2.8.4
 
-ENV cachet_ver ${cachet_ver:-2.4}
-ENV archive_url ${archive_url:-https://github.com/cachethq/Cachet/archive/${cachet_ver}.tar.gz}
+RUN apt update
+RUN apt install -y libzip-dev libxml2-dev default-mysql-client postgresql-client supervisor nginx libpq-dev
 
-# Install system dependencies
-RUN apk add --no-cache --update \
-    mysql-client \
-    php82 \
-    php82-pecl-apcu \
-    php82-bcmath \
-    php82-ctype \
-    php82-curl \
-    php82-dom \
-    php82-fileinfo \
-    php82-fpm \
-    php82-gd \
-    php82-iconv \
-    php82-intl \
-    php82-mbstring \
-    php82-pecl-mcrypt \
-    php82-mysqlnd \
-    php82-opcache \
-    php82-openssl \
-    php82-pdo \
-    php82-pdo_mysql \
-    php82-pdo_pgsql \
-    php82-pdo_sqlite \
-    php82-phar \
-    php82-posix \
-    php82-pecl-redis \
-    php82-session \
-    php82-simplexml \
-    php82-soap \
-    php82-sqlite3 \
-    php82-tokenizer \
-    php82-xml \
-    php82-xmlwriter \
-    php82-zip \
-    postfix \
-    sqlite \
-    sudo \
-    wget sqlite git curl bash grep \
-    supervisor
+RUN CFLAGS="-I/usr/src/php" docker-php-ext-install zip xmlreader intl
+RUN docker-php-ext-enable zip intl xmlreader
+RUN pecl install apcu && \
+    docker-php-ext-enable apcu && \
+    docker-php-ext-install pdo pdo_pgsql pdo_mysql && \
+    pecl clear-cache 
 
-RUN ln -s /usr/bin/php82 /usr/bin/php
+RUN apt install -y git wget
 
-# forward request and error logs to docker log collector
-RUN ln -sf /dev/stdout /var/log/nginx/access.log && \
-    ln -sf /dev/stderr /var/log/nginx/error.log && \
-    ln -sf /dev/stdout /var/log/php82/error.log && \
-    ln -sf /dev/stderr /var/log/php82/error.log
 
-RUN adduser -S -s /bin/bash -u 1001 -G root www-data
-
-RUN echo "www-data	ALL=(ALL:ALL)	NOPASSWD:SETENV:	/usr/sbin/postfix" >> /etc/sudoers
-
-RUN touch /var/run/nginx.pid && \
-    chown -R www-data:root /var/run/nginx.pid
-
-RUN chown -R www-data:root /etc/php82/php-fpm.d
-
-RUN mkdir -p /var/www/html && \
-    mkdir -p /usr/share/nginx/cache && \
-    mkdir -p /var/cache/nginx && \
-    mkdir -p /var/lib/nginx && \
-    chown -R www-data:root /var/www /usr/share/nginx/cache /var/cache/nginx /var/lib/nginx/
-
-# Install composer
-RUN wget https://getcomposer.org/installer -O /tmp/composer-setup.php && \
+RUN cd /tmp ; wget https://getcomposer.org/installer -O /tmp/composer-setup.php && \
     wget https://composer.github.io/installer.sig -O /tmp/composer-setup.sig && \
     php -r "if (hash('SHA384', file_get_contents('/tmp/composer-setup.php')) !== trim(file_get_contents('/tmp/composer-setup.sig'))) { unlink('/tmp/composer-setup.php'); echo 'Invalid installer' . PHP_EOL; exit(1); }" && \
-    php /tmp/composer-setup.php --install-dir=bin && \
+    php /tmp/composer-setup.php --version=$COMPOSER_VERSION --install-dir=/bin && \
     php -r "unlink('/tmp/composer-setup.php');"
 
-WORKDIR /var/www/html/
-USER 1001
+RUN ln -s /usr/bin/composer.phar /usr/bin/composer
 
-RUN wget ${archive_url} && \
-    tar xzf ${cachet_ver}.tar.gz --strip-components=1 && \
-    chown -R www-data:root /var/www/html && \
-    rm -r ${cachet_ver}.tar.gz && \
-    php /bin/composer.phar install --no-dev -o && \
-    rm -rf bootstrap/cache/* && \
-    php /bin/composer.phar update cachethq/core
+RUN cd /tmp && \
+    git clone https://github.com/cachethq/cachet && \
+    cd /tmp/cachet && \
+    php /bin/composer.phar install --no-dev -o
 
-COPY conf/php-fpm-pool.conf /etc/php82/php-fpm.d/www.conf
+RUN  cd /tmp/cachet  && composer update cachethq/core && \
+    rm -rf /var/www/html && \
+    mv /tmp/cachet /var/www/html && \
+    chown -R www-data:root /var/www/html
+
+RUN touch /var/www/html/database/database.sqlite && chown www-data:root /var/www/html/database/database.sqlite
+
 COPY conf/supervisord.conf /etc/supervisor/supervisord.conf
 COPY conf/nginx.conf /etc/nginx/nginx.conf
 COPY conf/nginx-site.conf /etc/nginx/conf.d/default.conf
-COPY conf/.env.docker /var/www/html/.env
+RUN cp /var/www/html/.env.example /var/www/html/.env
 COPY entrypoint.sh /sbin/entrypoint.sh
 
-USER root
-RUN chmod g+rwx /var/run/nginx.pid && \
-    chmod -R g+rw /var/www /usr/share/nginx/cache /var/cache/nginx /var/lib/nginx/ /etc/php82/php-fpm.d storage
-USER 1001
+RUN mkdir /var/cache/nginx && chmod 777 /var/cache/nginx
+
+WORKDIR /var/www/html/
+
+COPY entrypoint.sh /sbin/entrypoint.sh
