@@ -13,28 +13,38 @@ ENV archive_url ${archive_url:-https://github.com/cachethq/Cachet/archive/${cach
 RUN apk add --no-cache --update \
     mysql-client \
     php82 \
-    php82-common \
-    php82-fpm \
-    php82-pdo \
-    php82-opcache \
-    php82-zip \
-    php82-phar \
-    php82-iconv \
-    php82-cli \
+    php82-apcu \
+    php82-bcmath \
+    php82-ctype \
     php82-curl \
-    php82-openssl \
-    php82-mbstring \
-    php82-tokenizer \
+    php82-dom \
     php82-fileinfo \
+    php82-fpm \
+    php82-gd \
+    php82-iconv \
+    php82-intl \
     php82-json \
+    php82-mbstring \
+    php82-mcrypt \
+    php82-mysqlnd \
+    php82-opcache \
+    php82-openssl \
+    php82-pdo \
+    php82-pdo_mysql \
+    php82-pdo_pgsql \
+    php82-pdo_sqlite \
+    php82-phar \
+    php82-posix \
+    php82-redis \
+    php82-session \
+    php82-simplexml \
+    php82-soap \
+    php82-sqlite3 \
+    php82-tokenizer \
     php82-xml \
     php82-xmlwriter \
-    php82-simplexml \
-    php82-dom \
-    php82-pdo_mysql \
-    php82-pdo_sqlite \
-    php82-tokenizer \
-    php82-pecl-redis \
+    php82-zip \
+    php82-zlib \
     postfix \
     postgresql \
     postgresql-client \
