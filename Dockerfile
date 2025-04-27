@@ -13,7 +13,7 @@ ENV archive_url ${archive_url:-https://github.com/cachethq/Cachet/archive/${cach
 RUN apk add --no-cache --update \
     mysql-client \
     php82 \
-    php82-apcu \
+    php82-pecl-apcu \
     php82-bcmath \
     php82-ctype \
     php82-curl \
@@ -23,9 +23,8 @@ RUN apk add --no-cache --update \
     php82-gd \
     php82-iconv \
     php82-intl \
-    php82-json \
     php82-mbstring \
-    php82-mcrypt \
+    php82-pecl-mcrypt \
     php82-mysqlnd \
     php82-opcache \
     php82-openssl \
@@ -35,7 +34,7 @@ RUN apk add --no-cache --update \
     php82-pdo_sqlite \
     php82-phar \
     php82-posix \
-    php82-redis \
+    php82-pecl-redis \
     php82-session \
     php82-simplexml \
     php82-soap \
@@ -44,10 +43,7 @@ RUN apk add --no-cache --update \
     php82-xml \
     php82-xmlwriter \
     php82-zip \
-    php82-zlib \
     postfix \
-    postgresql \
-    postgresql-client \
     sqlite \
     sudo \
     wget sqlite git curl bash grep \
