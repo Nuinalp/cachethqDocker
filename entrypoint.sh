@@ -85,6 +85,17 @@ initialize_system() {
   rm -rf bootstrap/cache/*
 }
 
+
+seed_db() {
+  echo "Running Seeders"
+  force=""
+  if [[ "${FORCE_SEED:-false}" == true ]]; then
+    force="--force"
+  fi
+  
+  php artisan db:seed ${force}
+}
+
 init_db() {
   echo "Initializing Cachet database ..."
   php artisan key:generate --no-interaction
@@ -105,7 +116,7 @@ start_system() {
   php artisan vendor:publish --tag=livewire:assets
   php artisan vendor:publish --tag=cachet
   php artisan filament:assets
-  php artisan cachet:make:user --email ${ADMIN_EMAIL} --password ${ADMIN_PASSWORD} --admin admin --name ${ADMIN_NAME}
+  seed_db	
   echo "Starting Cachet! ..."
   /usr/bin/supervisord -n -c /etc/supervisor/supervisord.conf
 }
