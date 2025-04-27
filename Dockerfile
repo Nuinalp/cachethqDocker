@@ -36,7 +36,7 @@ RUN apk add --no-cache --update \
     php82-pdo_mysql \
     php82-pdo_sqlite \
     php82-tokenizer \
-    php82-pecl-redis
+    php82-pecl-redis \
     postfix \
     postgresql \
     postgresql-client \
