@@ -80,8 +80,7 @@ RUN wget ${archive_url} && \
     tar xzf ${cachet_ver}.tar.gz --strip-components=1 && \
     chown -R www-data:root /var/www/html && \
     rm -r ${cachet_ver}.tar.gz && \
-    php /bin/composer.phar global require "hirak/prestissimo:^0.3" && \
-    php /bin/composer.phar install -o && \
+    php /bin/composer.phar install --no-dev -o && \
     rm -rf bootstrap/cache/* && \
     php /bin/composer.phar update cachethq/core
 
