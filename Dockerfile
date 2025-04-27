@@ -12,7 +12,9 @@ ENV archive_url ${archive_url:-https://github.com/cachethq/Cachet/archive/${cach
 ENV COMPOSER_VERSION 1.9.0
 
 # Install system dependencies
-RUN apk add --no-cache php82 \
+RUN apk add --no-cache --update \
+    mysql-client \
+    php82 \
     php82-common \
     php82-fpm \
     php82-pdo \
